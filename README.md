@@ -56,6 +56,100 @@ MultilayerPerceptron_WDBC_7/
 
 ---
 
+## Lưu đồ Pipeline
+
+```mermaid
+flowchart TB
+    subgraph DATA["📊 1. Dataset Curation"]
+        A[("WDBC.csv<br/>569 mẫu, 33 cột")] --> B["Loại bỏ cột nhiễu<br/>(id, Unnamed:32)"]
+        B --> C["Mã hóa nhãn<br/>M→0, B→1"]
+        C --> D["30 Features + Label"]
+    end
+
+    subgraph SPLIT["✂️ 2. Train/Test Split"]
+        D --> E["Train: 80%<br/>(455 mẫu)"]
+        D --> F["Test: 20%<br/>(114 mẫu)"]
+    end
+
+    subgraph NORM["📐 3. Data Normalization"]
+        E --> G["Z-Score<br/>z = (x-μ)/σ"]
+        G --> H["X_train_scaled"]
+        F --> I["X_test_scaled"]
+    end
+
+    subgraph MODEL["🧠 4. Build & Train Models"]
+        H --> J["Model 1<br/>Sigmoid Baseline<br/>(64,32) lr=0.001"]
+        H --> K["Model 2<br/>Sigmoid Optimized<br/>(100,) lr=0.01"]
+        H --> L["Model 3<br/>ReLU<br/>(64,32) lr=0.001"]
+    end
+
+    subgraph EVAL["📈 5. Evaluation"]
+        J --> M["Predict"]
+        K --> M
+        L --> M
+        M --> N["Metrics:<br/>Accuracy, Precision<br/>Recall, F1, ROC-AUC"]
+    end
+
+    subgraph COMPARE["🏆 6. So sánh & Kết luận"]
+        N --> O["Bảng so sánh<br/>3 Models"]
+        O --> P["Model tốt nhất"]
+        P --> Q[("Lưu model<br/>.pkl")]
+    end
+
+    style DATA fill:#e3f2fd,stroke:#1976d2
+    style SPLIT fill:#fff3e0,stroke:#f57c00
+    style NORM fill:#e8f5e9,stroke:#388e3c
+    style MODEL fill:#fce4ec,stroke:#c2185b
+    style EVAL fill:#f3e5f5,stroke:#7b1fa2
+    style COMPARE fill:#fff8e1,stroke:#ffa000
+```
+
+### Sơ đồ kiến trúc MLP
+
+```mermaid
+flowchart LR
+    subgraph INPUT["Input Layer"]
+        I1["x₁"]
+        I2["x₂"]
+        I3["..."]
+        I4["x₃₀"]
+    end
+
+    subgraph HIDDEN1["Hidden Layer 1"]
+        H1["h₁<br/>σ(z)"]
+        H2["h₂<br/>σ(z)"]
+        H3["..."]
+        H4["h₆₄"]
+    end
+
+    subgraph HIDDEN2["Hidden Layer 2"]
+        H21["h₁<br/>σ(z)"]
+        H22["h₂<br/>σ(z)"]
+        H23["..."]
+        H24["h₃₂"]
+    end
+
+    subgraph OUTPUT["Output Layer"]
+        O1["ŷ₀<br/>Malignant"]
+        O2["ŷ₁<br/>Benign"]
+    end
+
+    I1 & I2 & I3 & I4 --> H1 & H2 & H3 & H4
+    H1 & H2 & H3 & H4 --> H21 & H22 & H23 & H24
+    H21 & H22 & H23 & H24 --> O1 & O2
+
+    style INPUT fill:#bbdefb,stroke:#1976d2
+    style HIDDEN1 fill:#c8e6c9,stroke:#388e3c
+    style HIDDEN2 fill:#c8e6c9,stroke:#388e3c
+    style OUTPUT fill:#ffcdd2,stroke:#d32f2f
+```
+
+**Chú thích:**
+- **σ(z)** = Sigmoid: `1/(1+e^(-z))` hoặc ReLU: `max(0,z)`
+- **Output** = Softmax: `e^(zⱼ)/Σe^(zₖ)`
+
+---
+
 ## So sánh 3 Cấu hình MLP
 
 | Model | Hidden Layers | Activation | Learning Rate | Mục đích |
