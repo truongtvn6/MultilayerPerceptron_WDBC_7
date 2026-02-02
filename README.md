@@ -4,6 +4,8 @@
 
 Dự án này triển khai mạng nơ-ron **Multilayer Perceptron (MLP)** để phân loại khối u **lành tính (Benign)** và **ác tính (Malignant)** từ dữ liệu **Wisconsin Diagnostic Breast Cancer (WDBC)**.
 
+**Điểm nhấn:** So sánh 3 cấu hình MLP khác nhau để tìm ra phương pháp tối ưu và giải thích vấn đề **Vanishing Gradient** với Sigmoid activation.
+
 ### Thông tin Dataset
 
 - **Nguồn:** Wisconsin Diagnostic Breast Cancer Dataset
@@ -13,7 +15,8 @@ Dự án này triển khai mạng nơ-ron **Multilayer Perceptron (MLP)** để 
 
 ### Mục tiêu
 
-- Xây dựng mô hình MLP phân loại chính xác hai loại khối u
+- So sánh 3 cấu hình MLP để tìm ra mô hình tối ưu
+- Giải thích vấn đề Vanishing Gradient với Sigmoid activation
 - Triển khai theo đúng Training Pipeline từ slide MLP (GV Hoang Duc Quy)
 - Tạo các biểu đồ trực quan cho báo cáo
 
@@ -53,35 +56,43 @@ MultilayerPerceptron_WDBC_7/
 
 ---
 
-## Kiến trúc MLP
+## So sánh 3 Cấu hình MLP
 
-```
-Input Layer (30 neurons) → Hidden Layer 1 (64, Sigmoid) → Hidden Layer 2 (32, Sigmoid) → Output Layer (2, Softmax)
-```
+| Model | Hidden Layers | Activation | Learning Rate | Mục đích |
+|-------|---------------|------------|---------------|----------|
+| **Sigmoid Baseline** | (64, 32) | Sigmoid | 0.001 | Thể hiện vấn đề Vanishing Gradient |
+| **Sigmoid Optimized** | (100,) | Sigmoid | 0.01 | Giảm vanishing gradient (1 layer, lr cao) |
+| **ReLU** | (64, 32) | ReLU | 0.001 | So sánh với activation không có vanishing gradient |
+
+### Vấn đề Vanishing Gradient
+
+Sigmoid activation có đạo hàm tối đa = 0.25. Khi có nhiều layers, gradient bị nhân liên tiếp:
+- 2 layers: 0.25 × 0.25 = 6.25%
+- 3 layers: 0.25³ = 1.56%
+
+→ Gradient quá nhỏ → Model không học được
 
 ### Công thức toán học
 
 | Thành phần | Công thức | Implementation |
 |------------|-----------|----------------|
-| **Chuẩn hóa** | z = (x - μ) / σ | `StandardScaler()` |
-| **Activation Hidden** | g(z) = 1 / (1 + e^(-z)) | `activation='logistic'` |
-| **Activation Output** | g(zⱼ) = e^(zⱼ) / Σₖ e^(zₖ) | Softmax (tự động) |
-| **Loss** | L = -Σⱼ yⱼ log(ŷⱼ) | Categorical Cross-Entropy |
+| **Z-Score** | z = (x - μ) / σ | `StandardScaler()` |
+| **Sigmoid** | g(z) = 1 / (1 + e^(-z)) | `activation='logistic'` |
+| **ReLU** | g(z) = max(0, z) | `activation='relu'` |
+| **Softmax** | g(zⱼ) = e^(zⱼ) / Σₖ e^(zₖ) | Softmax (tự động) |
+| **Cross-Entropy** | L = -Σⱼ yⱼ log(ŷⱼ) | sklearn mặc định |
 
 ---
 
 ## Biểu đồ tạo ra
 
 1. **Phân bố lớp** - Bar chart & Pie chart
-2. **Ma trận tương quan** - Correlation Heatmap (QUAN TRỌNG)
-3. **Boxplot đặc trưng** - So sánh features theo lớp
-4. **Histogram đặc trưng** - Phân bố features theo lớp
-5. **So sánh chuẩn hóa** - Trước/sau StandardScaler
-6. **Confusion Matrix** - Ma trận nhầm lẫn
-7. **Learning Curve** - Loss theo epoch
-8. **So sánh Metrics** - Accuracy, Precision, Recall, F1
-9. **ROC Curve** - Với AUC score
-10. **Precision-Recall Curve** - Với Average Precision
+2. **Ma trận tương quan** - Correlation Heatmap
+3. **So sánh Learning Curves** - 3 models trên cùng 1 đồ thị
+4. **So sánh Metrics** - Accuracy, Precision, Recall, F1 của 3 models
+5. **Confusion Matrices** - Ma trận nhầm lẫn của 3 models
+6. **ROC Curves** - So sánh AUC của 3 models
+7. **Learning Curve chi tiết** - Model tốt nhất
 
 ---
 
@@ -119,15 +130,17 @@ results = evaluate_model(model, data['X_test_scaled'], data['y_test'])
 
 ---
 
-## Kết quả
+## Kết quả dự kiến
 
-Mô hình MLP đạt được kết quả tốt trên tập test:
+| Model | Accuracy | ROC-AUC | Nhận xét |
+|-------|----------|---------|----------|
+| Sigmoid Baseline | ~60-90% | ~0.85 | Vanishing gradient, học yếu |
+| Sigmoid Optimized | ~95-97% | ~0.99 | Cải thiện nhờ 1 layer + lr cao |
+| ReLU | ~96-98% | ~0.99 | Tốt nhất, không vanishing gradient |
 
-- **Accuracy:** ~96-98%
-- **Precision:** ~0.96
-- **Recall:** ~0.96
-- **F1-Score:** ~0.96
-- **ROC-AUC:** ~0.99
+**Khuyến nghị:**
+- Nếu phải dùng Sigmoid (theo lý thuyết): 1 hidden layer + learning rate 0.01
+- Trong thực tế: Dùng ReLU để đạt hiệu suất tốt nhất
 
 ---
 

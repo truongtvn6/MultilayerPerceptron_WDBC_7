@@ -1,0 +1,4 @@
+Model,Hidden Layers,Activation,Learning Rate,Epochs,Final Loss,Accuracy,Precision,Recall,F1-Score,ROC-AUC
+Sigmoid Baseline,"(64, 32)",LOGISTIC,0.001,278,0.0378,0.9561,0.9483,0.9603,0.9535,0.996
+Sigmoid Optimized,"(100,)",LOGISTIC,0.01,228,0.0042,0.9649,0.9588,0.9673,0.9627,0.9924
+ReLU,"(64, 32)",RELU,0.001,164,0.0045,0.9649,0.9588,0.9673,0.9627,0.9937
